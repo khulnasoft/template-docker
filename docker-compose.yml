@@ -1,31 +1,28 @@
-# --------------------------------------------- #
-# Note: this file originates in template-docker #
-# --------------------------------------------- #
+version: '3.8'
 
 services:
-  # ---- mega-linter ---- #
+  # ---- super-linter ---- #
   lint:
-    profiles: ["dev"]
-    image: oxsecurity/megalinter:v7.3.0
+    image: github/super-linter:v3
     volumes:
       - ./:/tmp/lint
     environment:
-      MEGALINTER_CONFIG: .github/linters/.mega-linter.yml
-      REPORT_OUTPUT_FOLDER: none
-      VALIDATE_ALL_CODEBASE: true
+      RUN_LOCAL: 'true'
+      LOG_LEVEL: 'ERROR'
+      MULTI_STATUS: 'false'
 
   # ---- readme generator ---- #
   readme:
-    profiles: ["dev"]
-    image: pandoc/minimal:2.19
+    image: pandoc/core:2.11.4
     volumes:
       - ./:/data
-    command: --defaults=.pandoc.yml
-
-  # ---- app ---- #
-  app:
-    profiles: ["app"]
-    privileged: true
-    build: .
-    env_file:
-      - .env
+    command: >-
+      --metadata-file=colophon.yml
+      --template=docs/README.template
+      --output=README.md
+      --from=gfm
+      --to=gfm
+      --fail-if-warnings
+      --wrap=preserve
+      --reference-links
+      docs/README.md
